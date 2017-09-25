@@ -99,4 +99,10 @@ final class ExtensionType {
     // extensions defined in RFC 5746
     final static ExtensionType EXT_RENEGOTIATION_INFO =
             e(0xff01, "renegotiation_info");     // IANA registry value: 65281
+
+    final static ExtensionType EXT_EXTENDED_MASTER_SECRET =
+            e(ExtendedMasterSecretExtension.ID, "extended_master_secret"); // IANA early allocation registry value: 24
+
+    final static ExtensionType EXT_TOKEN_BINDING =
+            e(TokenBindingExtension.ID, "token_binding"); // IANA early allocation registry value: 24
 }

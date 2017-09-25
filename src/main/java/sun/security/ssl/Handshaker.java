@@ -43,7 +43,6 @@ import javax.net.ssl.*;
 import sun.misc.HexDumpEncoder;
 
 import sun.security.internal.spec.*;
-import sun.security.internal.interfaces.TlsMasterSecret;
 
 import sun.security.ssl.HandshakeMessage.*;
 import sun.security.ssl.CipherSuite.*;
@@ -206,6 +205,8 @@ abstract class Handshaker {
 
     // need to dispose the object when it is invalidated
     boolean invalidated;
+
+    boolean isExtendedMasterSecretExtension;
 
     Handshaker(SSLSocketImpl c, SSLContextImpl context,
             ProtocolList enabledProtocols, boolean needCertVerify,
@@ -1200,27 +1201,50 @@ abstract class Handshaker {
         int prfHashLength = prf.getPRFHashLength();
         int prfBlockSize = prf.getPRFBlockSize();
 
-        TlsMasterSecretParameterSpec spec = new TlsMasterSecretParameterSpec(
-                preMasterSecret, protocolVersion.major, protocolVersion.minor,
-                clnt_random.random_bytes, svr_random.random_bytes,
-                prfHashAlg, prfHashLength, prfBlockSize);
+        if (isExtendedMasterSecretExtension) {
 
-        try {
-            KeyGenerator kg = JsseJce.getKeyGenerator(masterAlg);
-            kg.init(spec);
-            return kg.generateKey();
-        } catch (InvalidAlgorithmParameterException |
-                NoSuchAlgorithmException iae) {
-            // unlikely to happen, otherwise, must be a provider exception
-            //
-            // For RSA premaster secrets, do not signal a protocol error
-            // due to the Bleichenbacher attack. See comments further down.
-            if (debug != null && Debug.isOn("handshake")) {
-                System.out.println("RSA master secret generation error:");
-                iae.printStackTrace(System.out);
+            input.digestNow(); // need to have all the handshake messages as input into the session hash
+            byte[] sessionHash = handshakeHash.getFinishedHash();
+
+            TlsMasterSecretParameterSpec spec = new TlsMasterSecretParameterSpec(
+                    preMasterSecret, protocolVersion.major, protocolVersion.minor,
+                    sessionHash, new byte[0], // overload the randoms to put the session hash in for the seed
+                    prfHashAlg, prfHashLength, prfBlockSize);
+            ExtendedMasterSecretGenerator extendedMasterGenerator = new ExtendedMasterSecretGenerator();
+            try
+            {
+                extendedMasterGenerator.init(spec);
+                SecretKey secretKey = extendedMasterGenerator.generateKey();
+                return secretKey;
             }
-            throw new ProviderException(iae);
+            catch (InvalidAlgorithmParameterException e)
+            {
+                throw new ProviderException(e);
+            }
 
+        } else {
+            TlsMasterSecretParameterSpec spec = new TlsMasterSecretParameterSpec(
+                    preMasterSecret, protocolVersion.major, protocolVersion.minor,
+                    clnt_random.random_bytes, svr_random.random_bytes,
+                    prfHashAlg, prfHashLength, prfBlockSize);
+
+            try {
+                KeyGenerator kg = JsseJce.getKeyGenerator(masterAlg);
+                kg.init(spec);
+                return kg.generateKey();
+            } catch (InvalidAlgorithmParameterException |
+                    NoSuchAlgorithmException iae) {
+                // unlikely to happen, otherwise, must be a provider exception
+                //
+                // For RSA premaster secrets, do not signal a protocol error
+                // due to the Bleichenbacher attack. See comments further down.
+                if (debug != null && Debug.isOn("handshake")) {
+                    System.out.println("RSA master secret generation error:");
+                    iae.printStackTrace(System.out);
+                }
+                throw new ProviderException(iae);
+
+            }
         }
     }
 

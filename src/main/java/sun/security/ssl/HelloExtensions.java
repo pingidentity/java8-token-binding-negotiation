@@ -85,6 +85,10 @@ final class HelloExtensions {
                         new SupportedEllipticPointFormatsExtension(s, extlen);
             } else if (extType == ExtensionType.EXT_RENEGOTIATION_INFO) {
                 extension = new RenegotiationInfoExtension(s, extlen);
+            } else if (type == TokenBindingExtension.ID) {
+                extension = new TokenBindingExtension(s, extType);
+            } else if (type == ExtendedMasterSecretExtension.ID) {
+                extension = new ExtendedMasterSecretExtension(extlen, extType);
             } else {
                 extension = new UnknownExtension(s, extlen, extType);
             }
@@ -135,7 +139,9 @@ final class HelloExtensions {
     }
 
     void send(HandshakeOutStream s) throws IOException {
+
         int length = length();
+
         if (length == 0) {
             return;
         }

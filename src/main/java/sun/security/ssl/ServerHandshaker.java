@@ -540,6 +540,12 @@ final class ServerHandshaker extends Handshaker {
         svr_random = new RandomCookie(sslContext.getSecureRandom());
         m1.svr_random = svr_random;
 
+        // only supporting RFC 5705 Keying Material Exporters on SSLEngine
+        if (engine != null) {
+            engine.clientRandom = clnt_random.random_bytes;
+            engine.serverRandom = svr_random.random_bytes;
+        }
+
         session = null; // forget about the current session
         //
         // Here we go down either of two paths:  (a) the fast one, where
@@ -780,6 +786,20 @@ final class ServerHandshaker extends Handshaker {
                 m1.extensions.add(serverHelloSNI);
             }
         }
+
+        HelloExtension emsx = mesg.extensions.get(ExtensionType.EXT_EXTENDED_MASTER_SECRET);
+        if (emsx != null && protocolVersion.v >= ProtocolVersion.TLS11.v) {
+            isExtendedMasterSecretExtension = true;
+            m1.extensions.add(emsx);
+        }
+
+        HelloExtension ctbx = mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
+        TokenBindingExtension stbx = TokenBindingExtension.forServerHello(ctbx, isExtendedMasterSecretExtension, secureRenegotiation);
+        if (stbx != null && engine != null) { // only supporting Token Binding on SSLEngine
+            m1.extensions.add(stbx);
+            engine.tokenBindingKeyParamsId = stbx.keyParametersList[0];
+        }
+
 
         if (debug != null && Debug.isOn("handshake")) {
             m1.print(System.out);

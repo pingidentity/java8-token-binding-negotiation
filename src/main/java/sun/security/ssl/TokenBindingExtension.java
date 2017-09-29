@@ -8,11 +8,11 @@ import java.util.Arrays;
  */
 public class TokenBindingExtension extends HelloExtension
 {
+    static final byte[] EMPTY = new byte[0];
+
     static final byte RSA2048_PKCS1_5 = 0;
     static final byte RSA2048_PSS = 1;
     static final byte ECDSAP256 = 2;
-
-    static byte[] supportedKeyParams = new byte[] {ECDSAP256, RSA2048_PKCS1_5}; // todo maybe more here configurable and/or look at provider support
 
     static final int ID = 24;
 
@@ -40,12 +40,12 @@ public class TokenBindingExtension extends HelloExtension
         this.keyParametersList = keyParametersList;
     }
 
-    static TokenBindingExtension forServerHello(HelloExtension clientTbx, boolean isExtendedMaster, boolean secureRenegotiation) {
+    static TokenBindingExtension forServerHello(HelloExtension clientTbx, boolean isExtendedMaster, boolean secureRenegotiation, byte[] supportedKeyParams) {
         if (clientTbx != null && isExtendedMaster & (secureRenegotiation || Handshaker.rejectClientInitiatedRenego)) {
             TokenBindingExtension tbx = (TokenBindingExtension) clientTbx;
             // also need more version negotiation work at some point too todo maybe if version stays
             if (tbx.major == 0 && (tbx.minor >= 10 || tbx.minor <= 14)) {   // ONLY -10 to -14 for now and todo consider bigger picture & *ossification* when moving to final
-                Byte chosenKeyParameter = tbx.pickKeyParameter();
+                Byte chosenKeyParameter = tbx.pickKeyParameter(supportedKeyParams);
                 if (chosenKeyParameter != null) {
                     return new TokenBindingExtension(0, tbx.minor, chosenKeyParameter);
                 }
@@ -54,7 +54,9 @@ public class TokenBindingExtension extends HelloExtension
         return null;
     }
 
-    public Byte pickKeyParameter() {
+    public Byte pickKeyParameter(byte[] supportedKeyParams) {
+
+        supportedKeyParams = supportedKeyParams == null ? EMPTY : supportedKeyParams;
 
         int chosenIdx = supportedKeyParams.length;
 

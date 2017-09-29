@@ -213,7 +213,14 @@ final public class SSLEngineImpl extends SSLEngine {
      * The identifier of the Token Binding key parameters that were
      * negotiated. Null means that Token Binding wasn't negotiated.
      */
-    Byte                        tokenBindingKeyParamsId;
+    Byte                        negotiatedTokenBindingKeyParams;
+
+
+    /*
+     *  The list of identifiers of the Token Binding key parameters
+     *  supported in descending order of preference.
+     */
+    byte[]                      supportedTokenBindingKeyParams;
 
     /*
      * Client authentication be off, requested, or required.
@@ -2177,9 +2184,19 @@ final public class SSLEngineImpl extends SSLEngine {
         }
     }
 
-    public Byte getTokenBindingKeyParamsId()
+    public Byte getNegotiatedTokenBindingKeyParams()
     {
-        return tokenBindingKeyParamsId;
+        return negotiatedTokenBindingKeyParams;
+    }
+
+    public byte[] getSupportedTokenBindingKeyParams()
+    {
+        return supportedTokenBindingKeyParams;
+    }
+
+    public void setSupportedTokenBindingKeyParams(byte[] supportedTokenBindingKeyParams)
+    {
+        this.supportedTokenBindingKeyParams = supportedTokenBindingKeyParams;
     }
 
     /**

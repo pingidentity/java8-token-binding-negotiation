@@ -35,19 +35,23 @@ public class TokenBindingExtension extends HelloExtension
         this.keyParametersList = new byte[] {keyParameter};
     }
 
-    public TokenBindingExtension(byte[] keyParametersList) {
+    public TokenBindingExtension(byte[] keyParametersList, int major, int minor) {
         super(ExtensionType.EXT_TOKEN_BINDING);
+        this.major = major;
+        this.minor = minor;
         this.keyParametersList = keyParametersList;
     }
 
-    static TokenBindingExtension forServerHello(HelloExtension clientTbx, boolean isExtendedMaster, boolean secureRenegotiation, byte[] supportedKeyParams) {
+    public static TokenBindingExtension forServerHello(HelloExtension clientTbx, boolean isExtendedMaster, boolean secureRenegotiation, byte[] supportedKeyParams) {
         if (clientTbx != null && isExtendedMaster & (secureRenegotiation || Handshaker.rejectClientInitiatedRenego)) {
             TokenBindingExtension tbx = (TokenBindingExtension) clientTbx;
-            // also need more version negotiation work at some point too todo maybe if version stays
-            if (tbx.major == 0 && (tbx.minor >= 10 || tbx.minor <= 14)) {   // ONLY -10 to -14 for now and todo consider bigger picture & *ossification* when moving to final
+            boolean isDraftVersion = tbx.major == 0;
+            if (tbx.major >= 1 || (isDraftVersion && (tbx.minor >= 10 && tbx.minor <= 15))) {  // drafts -10 through -15 should be message format compatible with 1.0
                 Byte chosenKeyParameter = tbx.pickKeyParameter(supportedKeyParams);
                 if (chosenKeyParameter != null) {
-                    return new TokenBindingExtension(0, tbx.minor, chosenKeyParameter);
+                    int major = isDraftVersion ? tbx.major : 1;
+                    int minor = isDraftVersion ? tbx.minor : 0;
+                    return new TokenBindingExtension(major, minor, chosenKeyParameter);
                 }
             }
         }
@@ -71,6 +75,15 @@ public class TokenBindingExtension extends HelloExtension
         return chosenIdx < supportedKeyParams.length ? supportedKeyParams[chosenIdx] : null;
     }
 
+    public int getMajor()
+    {
+        return major;
+    }
+
+    public int getMinor()
+    {
+        return minor;
+    }
 
     @Override
     int length() {

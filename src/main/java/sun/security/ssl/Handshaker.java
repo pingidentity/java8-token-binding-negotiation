@@ -1248,6 +1248,37 @@ abstract class Handshaker {
         }
     }
 
+    byte[] getConnectionSupportedTokenBindingKeyParams()
+    {
+        byte[] supportedTokenBindingKeyParams;
+        if (conn != null) {
+            supportedTokenBindingKeyParams = conn.getSupportedTokenBindingKeyParams();
+        } else {
+            supportedTokenBindingKeyParams = engine.getSupportedTokenBindingKeyParams();
+        }
+        return supportedTokenBindingKeyParams;
+    }
+
+    void setConnectionNegotiatedTokenBindingKeyParams(byte negotiatedTokenBindingKeyParams)
+    {
+        if (conn != null) {
+            conn.negotiatedTokenBindingKeyParams = negotiatedTokenBindingKeyParams;
+        } else {
+            engine.negotiatedTokenBindingKeyParams = negotiatedTokenBindingKeyParams;
+        }
+    }
+
+    void setConnectionRandoms() {
+        // client and server randoms are used by RFC 5705 Keying Material Exporters on SSLEngine/SSLSocket
+        if (conn != null) {
+            conn.clientRandom = clnt_random.random_bytes;
+            conn.serverRandom = svr_random.random_bytes;
+        } else {
+            engine.clientRandom = clnt_random.random_bytes;
+            engine.serverRandom = svr_random.random_bytes;
+        }
+    }
+
     /*
      * Calculate the keys needed for this connection, once the session's
      * master secret has been calculated.  Uses the master key and nonces;

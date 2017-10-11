@@ -540,11 +540,7 @@ final class ServerHandshaker extends Handshaker {
         svr_random = new RandomCookie(sslContext.getSecureRandom());
         m1.svr_random = svr_random;
 
-        // only supporting RFC 5705 Keying Material Exporters on SSLEngine
-        if (engine != null) {
-            engine.clientRandom = clnt_random.random_bytes;
-            engine.serverRandom = svr_random.random_bytes;
-        }
+        setConnectionRandoms();
 
         session = null; // forget about the current session
         //
@@ -793,17 +789,15 @@ final class ServerHandshaker extends Handshaker {
             m1.extensions.add(emsx);
         }
 
-        if (engine != null) { // only supporting Token Binding on SSLEngine for now
-            HelloExtension ctbx = mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
-            TokenBindingExtension stbx = TokenBindingExtension
-                    .processClientHello(ctbx, isExtendedMasterSecretExtension,
-                            secureRenegotiation, engine.getSupportedTokenBindingKeyParams());
-            if (stbx != null) { // only supporting Token Binding on SSLEngine
-                m1.extensions.add(stbx);
-                engine.negotiatedTokenBindingKeyParams = stbx.keyParametersList[0];
-            }
-        }
 
+        HelloExtension ctbx = mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
+        TokenBindingExtension stbx = TokenBindingExtension
+                .processClientHello(ctbx, isExtendedMasterSecretExtension,
+                        secureRenegotiation, getConnectionSupportedTokenBindingKeyParams());
+        if (stbx != null) {
+            m1.extensions.add(stbx);
+            setConnectionNegotiatedTokenBindingKeyParams(stbx.keyParametersList[0]);
+        }
 
 
         if (debug != null && Debug.isOn("handshake")) {

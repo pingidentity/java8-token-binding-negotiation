@@ -530,11 +530,7 @@ final class ClientHandshaker extends Handshaker {
         //
         svr_random = mesg.svr_random;
 
-        // currently only supporting RFC 5705 Keying Material Exporters client side on SSLSocket
-        if (conn != null) {
-            conn.clientRandom = clnt_random.random_bytes;
-            conn.serverRandom = svr_random.random_bytes;
-        }
+        setConnectionRandoms();
 
         HelloExtension emsx = mesg.extensions.get(ExtensionType.EXT_EXTENDED_MASTER_SECRET);
         if (emsx != null) {
@@ -562,18 +558,17 @@ final class ClientHandshaker extends Handshaker {
 
         TokenBindingExtension tbx = (TokenBindingExtension) mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
         if (tbx != null) {
-            if (conn != null) {  // currently only supporting Token Binding client side on SSLSocket
-                byte[] requestedKeyParamsList = conn.supportedTokenBindingKeyParams;
+            byte[] requestedKeyParamsList = getConnectionSupportedTokenBindingKeyParams();
 
-                try {
-                    byte serverChosenKeyParams = tbx.processServerHello(isExtendedMasterSecretExtension,
-                            secureRenegotiation, requestedKeyParamsList);
-                    conn.negotiatedTokenBindingKeyParams = serverChosenKeyParams;
-                }
-                catch (SSLHandshakeException e) {
-                    fatalSE(Alerts.alert_unsupported_extension, e.getMessage(), e);
-                }
+            try {
+                byte serverChosenKeyParams = tbx.processServerHello(isExtendedMasterSecretExtension,
+                        secureRenegotiation, requestedKeyParamsList);
+                setConnectionNegotiatedTokenBindingKeyParams(serverChosenKeyParams);
             }
+            catch (SSLHandshakeException e) {
+                fatalSE(Alerts.alert_unsupported_extension, e.getMessage(), e);
+            }
+
         }
 
         // so far so good, let's look at the session
@@ -1461,14 +1456,12 @@ final class ClientHandshaker extends Handshaker {
             clientHelloMessage.addRenegotiationInfoExtension(clientVerifyData);
         }
 
-        if (conn != null) { // currently only supporting Token Binding client side on SSLSocket
-            byte[] supportedTokenBindingKeyParams = conn.getSupportedTokenBindingKeyParams();
-            if (supportedTokenBindingKeyParams != null) {
-                clientHelloMessage.extensions.add(new ExtendedMasterSecretExtension());
-                clientHelloMessage.extensions.add(new TokenBindingExtension(1, 0, supportedTokenBindingKeyParams));
-            }
-        }
+        byte[] supportedTokenBindingKeyParams = getConnectionSupportedTokenBindingKeyParams();
 
+        if (supportedTokenBindingKeyParams != null) {
+            clientHelloMessage.extensions.add(new ExtendedMasterSecretExtension());
+            clientHelloMessage.extensions.add(new TokenBindingExtension(1, 0, supportedTokenBindingKeyParams));
+        }
 
         return clientHelloMessage;
     }

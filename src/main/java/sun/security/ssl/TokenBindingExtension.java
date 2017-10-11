@@ -43,7 +43,7 @@ public class TokenBindingExtension extends HelloExtension
         this.keyParametersList = keyParametersList;
     }
 
-    public static TokenBindingExtension forServerHello(HelloExtension clientTbx, boolean isExtendedMaster, boolean secureRenegotiation, byte[] supportedKeyParams) {
+    public static TokenBindingExtension processClientHello(HelloExtension clientTbx, boolean isExtendedMaster, boolean secureRenegotiation, byte[] supportedKeyParams) {
         if (clientTbx != null && isExtendedMaster & (secureRenegotiation || Handshaker.rejectClientInitiatedRenego)) {
             TokenBindingExtension tbx = (TokenBindingExtension) clientTbx;
             boolean isDraftVersion = tbx.major == 0;

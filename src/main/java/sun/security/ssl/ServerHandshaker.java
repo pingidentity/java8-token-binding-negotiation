@@ -796,7 +796,7 @@ final class ServerHandshaker extends Handshaker {
         if (engine != null) { // only supporting Token Binding on SSLEngine for now
             HelloExtension ctbx = mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
             TokenBindingExtension stbx = TokenBindingExtension
-                    .forServerHello(ctbx, isExtendedMasterSecretExtension,
+                    .processClientHello(ctbx, isExtendedMasterSecretExtension,
                             secureRenegotiation, engine.getSupportedTokenBindingKeyParams());
             if (stbx != null) { // only supporting Token Binding on SSLEngine
                 m1.extensions.add(stbx);

@@ -107,7 +107,7 @@ public class TokenBindingExtensionTest {
         int major = 1;
         int minor = 0;
         TokenBindingExtension ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        TokenBindingExtension stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        TokenBindingExtension stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(1));
         assertThat(stbx.getMinor(), equalTo(0));
@@ -115,7 +115,7 @@ public class TokenBindingExtensionTest {
         major = 1;
         minor = 1;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(1));
         assertThat(stbx.getMinor(), equalTo(0));
@@ -123,7 +123,7 @@ public class TokenBindingExtensionTest {
         major = 1;
         minor = 7;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(1));
         assertThat(stbx.getMinor(), equalTo(0));
@@ -131,7 +131,7 @@ public class TokenBindingExtensionTest {
         major = 2;
         minor = 0;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(1));
         assertThat(stbx.getMinor(), equalTo(0));
@@ -139,7 +139,7 @@ public class TokenBindingExtensionTest {
         major = 2;
         minor = 1;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(1));
         assertThat(stbx.getMinor(), equalTo(0));
@@ -147,7 +147,7 @@ public class TokenBindingExtensionTest {
         major = 3;
         minor = 0;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(1));
         assertThat(stbx.getMinor(), equalTo(0));
@@ -155,7 +155,7 @@ public class TokenBindingExtensionTest {
         major = 3;
         minor = 0;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(1));
         assertThat(stbx.getMinor(), equalTo(0));
@@ -163,37 +163,37 @@ public class TokenBindingExtensionTest {
         major = 0;
         minor = 0;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNull(stbx);
 
         major = 0;
         minor = 2;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNull(stbx);
 
         major = 0;
         minor = 8;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNull(stbx);
 
         major = 0;
         minor = 9;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNull(stbx);
 
         major = 0;
         minor = 22;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNull(stbx);
 
         major = 0;
         minor = 10;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(major));
         assertThat(stbx.getMinor(), equalTo(minor));
@@ -201,7 +201,7 @@ public class TokenBindingExtensionTest {
         major = 0;
         minor = 11;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(major));
         assertThat(stbx.getMinor(), equalTo(minor));
@@ -209,7 +209,7 @@ public class TokenBindingExtensionTest {
         major = 0;
         minor = 12;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(major));
         assertThat(stbx.getMinor(), equalTo(minor));
@@ -217,7 +217,7 @@ public class TokenBindingExtensionTest {
         major = 0;
         minor = 13;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(major));
         assertThat(stbx.getMinor(), equalTo(minor));
@@ -225,7 +225,7 @@ public class TokenBindingExtensionTest {
         major = 0;
         minor = 14;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(major));
         assertThat(stbx.getMinor(), equalTo(minor));
@@ -233,7 +233,7 @@ public class TokenBindingExtensionTest {
         major = 0;
         minor = 15;
         ctbx = new TokenBindingExtension(major, minor, keyParametersList);
-        stbx = TokenBindingExtension.forServerHello(ctbx, true, true, supportedKeyParams);
+        stbx = TokenBindingExtension.processClientHello(ctbx, true, true, supportedKeyParams);
         assertNotNull(stbx);
         assertThat(stbx.getMajor(), equalTo(major));
         assertThat(stbx.getMinor(), equalTo(minor));

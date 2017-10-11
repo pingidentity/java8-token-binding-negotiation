@@ -10,6 +10,11 @@ public class ExtendedMasterSecretExtension extends HelloExtension
     static final byte[] ENTIRE_EXTENSION_ENCODING = new byte[] {0x00, 0x17, 0x00, 0x00};
     static final int ID = ENTIRE_EXTENSION_ENCODING[1];
 
+    ExtendedMasterSecretExtension()
+    {
+        super(ExtensionType.EXT_EXTENDED_MASTER_SECRET);
+    }
+
     ExtendedMasterSecretExtension(int len, ExtensionType extensionType) throws IOException {
         super(extensionType);
         if (len != 0) {

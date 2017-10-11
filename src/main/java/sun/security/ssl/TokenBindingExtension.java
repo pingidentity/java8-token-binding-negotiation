@@ -1,5 +1,6 @@
 package sun.security.ssl;
 
+import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -28,14 +29,14 @@ public class TokenBindingExtension extends HelloExtension
         keyParametersList = handshakeInStream.getBytes8();
     }
 
-    TokenBindingExtension(int major, int minor, byte keyParameter) {
+    public TokenBindingExtension(int major, int minor, byte keyParameter) {
         super(ExtensionType.EXT_TOKEN_BINDING);
         this.major = major;
         this.minor = minor;
         this.keyParametersList = new byte[] {keyParameter};
     }
 
-    public TokenBindingExtension(byte[] keyParametersList, int major, int minor) {
+    public TokenBindingExtension(int major, int minor, byte[] keyParametersList) {
         super(ExtensionType.EXT_TOKEN_BINDING);
         this.major = major;
         this.minor = minor;
@@ -75,6 +76,48 @@ public class TokenBindingExtension extends HelloExtension
         return chosenIdx < supportedKeyParams.length ? supportedKeyParams[chosenIdx] : null;
     }
 
+    public byte processServerHello(boolean isExtendedMaster, boolean secureRenegotiation, byte[] requestedKeyParamsList)
+        throws SSLHandshakeException {
+        if (!isExtendedMaster) {
+            throw new SSLHandshakeException("Extended Master Secret extension was not negotiated (but is required for token_binding).");
+        }
+
+        if (!secureRenegotiation) {
+            throw new SSLHandshakeException("TLS Renegotiation Indication extension was not negotiated (but is required for token_binding).");
+        }
+
+        if (major == 1 && minor > 0) {
+            throw new SSLHandshakeException("token_binding_version "+ major +"."+ minor +" is higher than the Token Binding protocol version advertised by the client.");
+        }
+
+        if (keyParametersList.length > 1) {
+            throw new SSLHandshakeException("token_binding key_parameters_list " + Arrays.toString(keyParametersList) + " includes more than one Token Binding key parameters identifier.");
+        }
+
+        if (keyParametersList.length == 0) {
+            throw new SSLHandshakeException("token_binding key_parameters_list is empty.");
+        }
+
+        if (requestedKeyParamsList == null || requestedKeyParamsList.length == 0) {
+            throw new SSLHandshakeException("did not include the token_binding extension in the client hello but received one in server hello.");
+        }
+
+        boolean keyParamsMatch = false;
+        byte serverChosenKeyParams = keyParametersList[0];
+        for (byte requestedKeyParams : requestedKeyParamsList) {
+            if (serverChosenKeyParams == requestedKeyParams) {
+                keyParamsMatch = true;
+                break;
+            }
+        }
+
+        if (!keyParamsMatch) {
+            throw new SSLHandshakeException("token_binding key_parameters_list " + Arrays.toString(keyParametersList) + " includes an identifier that was not advertised by the client "+ Arrays.toString(requestedKeyParamsList)+".");
+        }
+
+        return serverChosenKeyParams;
+    }
+
     public int getMajor()
     {
         return major;
@@ -107,7 +150,7 @@ public class TokenBindingExtension extends HelloExtension
 
     @Override
     public String toString() {
-        return String.format("Extension %s v%s.%s w/ %s", type, major, minor, Arrays.toString(keyParametersList));
+        return String.format("Extension %s v%s.%s with key_parameters_list: %s", type, major, minor, Arrays.toString(keyParametersList));
     }
 
 }

@@ -530,6 +530,17 @@ final class ClientHandshaker extends Handshaker {
         //
         svr_random = mesg.svr_random;
 
+        // currently only supporting RFC 5705 Keying Material Exporters client side on SSLSocket
+        if (conn != null) {
+            conn.clientRandom = clnt_random.random_bytes;
+            conn.serverRandom = svr_random.random_bytes;
+        }
+
+        HelloExtension emsx = mesg.extensions.get(ExtensionType.EXT_EXTENDED_MASTER_SECRET);
+        if (emsx != null) {
+            isExtendedMasterSecretExtension = true;
+        }
+
         if (isNegotiable(mesg.cipherSuite) == false) {
             fatalSE(Alerts.alert_illegal_parameter,
                 "Server selected improper ciphersuite " + mesg.cipherSuite);
@@ -545,6 +556,24 @@ final class ClientHandshaker extends Handshaker {
                 "compression type not supported, "
                 + mesg.compression_method);
             // NOTREACHED
+        }
+
+
+
+        TokenBindingExtension tbx = (TokenBindingExtension) mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
+        if (tbx != null) {
+            if (conn != null) {  // currently only supporting Token Binding client side on SSLSocket
+                byte[] requestedKeyParamsList = conn.supportedTokenBindingKeyParams;
+
+                try {
+                    byte serverChosenKeyParams = tbx.processServerHello(isExtendedMasterSecretExtension,
+                            secureRenegotiation, requestedKeyParamsList);
+                    conn.negotiatedTokenBindingKeyParams = serverChosenKeyParams;
+                }
+                catch (SSLHandshakeException e) {
+                    fatalSE(Alerts.alert_unsupported_extension, e.getMessage(), e);
+                }
+            }
         }
 
         // so far so good, let's look at the session
@@ -652,7 +681,9 @@ final class ClientHandshaker extends Handshaker {
             } else if ((type != ExtensionType.EXT_ELLIPTIC_CURVES)
                     && (type != ExtensionType.EXT_EC_POINT_FORMATS)
                     && (type != ExtensionType.EXT_SERVER_NAME)
-                    && (type != ExtensionType.EXT_RENEGOTIATION_INFO)) {
+                    && (type != ExtensionType.EXT_RENEGOTIATION_INFO)
+                    && (type != ExtensionType.EXT_TOKEN_BINDING)
+                    && (type != ExtensionType.EXT_EXTENDED_MASTER_SECRET)) {
                 fatalSE(Alerts.alert_unsupported_extension,
                     "Server sent an unsupported extension: " + type);
             }
@@ -1429,6 +1460,15 @@ final class ClientHandshaker extends Handshaker {
                 !cipherSuites.contains(CipherSuite.C_SCSV)) {
             clientHelloMessage.addRenegotiationInfoExtension(clientVerifyData);
         }
+
+        if (conn != null) { // currently only supporting Token Binding client side on SSLSocket
+            byte[] supportedTokenBindingKeyParams = conn.getSupportedTokenBindingKeyParams();
+            if (supportedTokenBindingKeyParams != null) {
+                clientHelloMessage.extensions.add(new ExtendedMasterSecretExtension());
+                clientHelloMessage.extensions.add(new TokenBindingExtension(1, 0, supportedTokenBindingKeyParams));
+            }
+        }
+
 
         return clientHelloMessage;
     }

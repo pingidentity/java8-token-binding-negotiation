@@ -28,9 +28,11 @@ package sun.security.ssl;
 
 import java.io.*;
 import java.net.*;
+import java.security.DigestException;
 import java.security.GeneralSecurityException;
 import java.security.AccessController;
 import java.security.AccessControlContext;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedAction;
 import java.security.AlgorithmConstraints;
 import java.util.*;
@@ -225,6 +227,26 @@ final public class SSLSocketImpl extends BaseSSLSocketImpl {
 
     // Is the sniMatchers set to empty with SSLParameters.setSNIMatchers()?
     private boolean             noSniMatcher = false;
+
+    /*
+     * RFC 5705 Keying Material Exporters use client and sever random
+     * as inputs into the PRF.
+     */
+    byte[]                              clientRandom, serverRandom;
+
+    /*
+     * The identifier of the Token Binding key parameters that were
+     * negotiated. Null means that Token Binding wasn't negotiated.
+     */
+    Byte                        negotiatedTokenBindingKeyParams;
+
+
+    /*
+     *  The list of identifiers of the Token Binding key parameters
+     *  supported in descending order of preference.
+     */
+    byte[]                      supportedTokenBindingKeyParams;
+
 
     /*
      * READ ME * READ ME * READ ME * READ ME * READ ME * READ ME *
@@ -2724,5 +2746,27 @@ final public class SSLSocketImpl extends BaseSSLSocketImpl {
         retval.append("]");
 
         return retval.toString();
+    }
+
+    public byte[] exportKeyingMaterial(String label, int length)
+            throws DigestException, NoSuchAlgorithmException
+    {
+        return KeyingMaterialExporter.ekm(label, length, protocolVersion,
+                sess, clientRandom, serverRandom);
+    }
+
+    public Byte getNegotiatedTokenBindingKeyParams()
+    {
+        return negotiatedTokenBindingKeyParams;
+    }
+
+    public byte[] getSupportedTokenBindingKeyParams()
+    {
+        return supportedTokenBindingKeyParams;
+    }
+
+    public void setSupportedTokenBindingKeyParams(byte[] supportedTokenBindingKeyParams)
+    {
+        this.supportedTokenBindingKeyParams = supportedTokenBindingKeyParams;
     }
 }

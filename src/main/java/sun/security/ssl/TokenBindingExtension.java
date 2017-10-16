@@ -47,7 +47,7 @@ public class TokenBindingExtension extends HelloExtension
         if (clientTbx != null && isExtendedMaster & (secureRenegotiation || Handshaker.rejectClientInitiatedRenego)) {
             TokenBindingExtension tbx = (TokenBindingExtension) clientTbx;
             boolean isDraftVersion = tbx.major == 0;
-            if (tbx.major >= 1 || (isDraftVersion && (tbx.minor >= 10 && tbx.minor <= 15))) {  // drafts -10 through -15 should be message format compatible with 1.0
+            if (tbx.major >= 1 || (isDraftVersion && (tbx.minor >= 10 && tbx.minor <= 16))) {  // drafts -10 through -16 should be message format compatible with 1.0
                 Byte chosenKeyParameter = tbx.pickKeyParameter(supportedKeyParams);
                 if (chosenKeyParameter != null) {
                     int major = isDraftVersion ? tbx.major : 1;

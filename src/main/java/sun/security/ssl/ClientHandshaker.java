@@ -1458,9 +1458,9 @@ final class ClientHandshaker extends Handshaker {
 
         byte[] supportedTokenBindingKeyParams = getConnectionSupportedTokenBindingKeyParams();
 
-        if (supportedTokenBindingKeyParams != null) {
+        if (supportedTokenBindingKeyParams != null && supportedTokenBindingKeyParams.length > 0) {
             clientHelloMessage.extensions.add(new ExtendedMasterSecretExtension());
-            clientHelloMessage.extensions.add(new TokenBindingExtension(1, 0, supportedTokenBindingKeyParams));
+            clientHelloMessage.extensions.add(new TokenBindingExtension(0, 15, supportedTokenBindingKeyParams));    // TODO don't commit me and whatever just for testing right now with the old PA 
         }
 
         return clientHelloMessage;

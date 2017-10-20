@@ -231,9 +231,184 @@ public abstract class SunJSSE extends java.security.Provider {
     }
 
     private void subclassCheck() {
-        if (getClass() != com.sun.net.ssl.internal.ssl.Provider.class) {
-            throw new AssertionError("Illegal subclass: " + getClass());
-        }
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//        if (getClass() != com.sun.net.ssl.internal.ssl.Provider.class) {
+//            throw new AssertionError("Illegal subclass: " + getClass());
+//        }
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+        // do not commit this !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     }
 
     @Override

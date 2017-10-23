@@ -216,6 +216,22 @@ public class NioSslServer extends NioSslPeer {
                     byte[] messageBytes = new byte[result.bytesProduced()];
                     peerAppData.get(messageBytes);
                     message = new String(messageBytes);
+
+                    if (message.startsWith(Helper.SEND_EKM)) {
+                        String encodedEKM;
+                        try
+                        {
+                            encodedEKM = Helper.getEncodedTokenBindingEKM(engine);
+                        }
+                        catch (ReflectiveOperationException e)
+                        {
+                            encodedEKM = e.toString();
+                            e.printStackTrace();
+                        }
+
+                        message = encodedEKM + "\n";
+                    }
+
                     break;
                 case BUFFER_OVERFLOW:
                     peerAppData = enlargeApplicationBuffer(engine, peerAppData);

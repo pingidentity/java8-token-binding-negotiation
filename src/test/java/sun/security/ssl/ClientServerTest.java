@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
+import java.util.Base64;
 
 /**
  * Some sanity tests of TLS handshaking using both SSLSocket and SSLSession with and without Token Binding being negotiated
@@ -207,8 +208,7 @@ public class ClientServerTest {
         waitForServerStartup();
         runEngineClient(PORT, null, null);
     }
-
-
+    
     @Test
     public void socketToSocketNegoTbEc() throws Exception {
 
@@ -272,6 +272,12 @@ public class ClientServerTest {
                 Assert.assertThat(read, CoreMatchers.equalTo(message));
             }
 
+            client.write(Helper.SEND_EKM + "\n");
+            String encodedEkmFromServer = client.read();
+            encodedEkmFromServer = encodedEkmFromServer.substring(0, encodedEkmFromServer.length() - 1);
+            String encodedEKM = Helper.getEncodedTokenBindingEKM(engine);
+            Assert.assertThat(encodedEkmFromServer, CoreMatchers.equalTo(encodedEKM));
+
         } finally {
             client.shutdown();
         }
@@ -303,6 +309,12 @@ public class ClientServerTest {
                 writer.flush();
                 Assert.assertThat(reader.readLine(), CoreMatchers.equalTo(message));
             }
+
+            writer.println(Helper.SEND_EKM);
+            writer.flush();
+            String encodedEkmFromServer = reader.readLine();
+            String encodedEKM = Helper.getEncodedTokenBindingEKM(socket);
+            Assert.assertThat(encodedEkmFromServer, CoreMatchers.equalTo(encodedEKM));
 
             writer.close();
             reader.close();
@@ -364,7 +376,14 @@ public class ClientServerTest {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String line;
                 while ((line=reader.readLine())!= null) {
-                    writer.println(line);
+
+                    if (line.equals(Helper.SEND_EKM)) {
+                        String encodedEKM = Helper.getEncodedTokenBindingEKM(socket);
+                         writer.println(encodedEKM);
+                    }  else {
+                        writer.println(line);
+                    }
+
                     writer.flush();
                 }
 

@@ -1256,8 +1256,15 @@ abstract class Handshaker {
         } else {
             supportedTokenBindingKeyParams = engine.getSupportedTokenBindingKeyParams();
         }
+
+        if (supportedTokenBindingKeyParams == null) {
+            supportedTokenBindingKeyParams = getDefaultSupportedTokenBindingKeyParams();
+        }
+
         return supportedTokenBindingKeyParams;
     }
+
+    abstract byte[] getDefaultSupportedTokenBindingKeyParams();
 
     void setConnectionNegotiatedTokenBindingKeyParams(byte negotiatedTokenBindingKeyParams)
     {

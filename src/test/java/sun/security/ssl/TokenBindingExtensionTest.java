@@ -1,5 +1,6 @@
 package sun.security.ssl;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import javax.net.ssl.SSLException;
@@ -309,4 +310,13 @@ public class TokenBindingExtensionTest {
         }
     }
 
+    @Test
+    public void testSimpleDelimitedKeyParamsString() {
+        Assert.assertArrayEquals(TokenBindingExtension.parseKeyParamsList("0,1,2"), new byte[] {0,1,2});
+        Assert.assertArrayEquals(TokenBindingExtension.parseKeyParamsList(" 0, 1, 2   "), new byte[] {0,1,2});
+        Assert.assertArrayEquals(TokenBindingExtension.parseKeyParamsList("0, 1 , 2"), new byte[] {0,1,2});
+        Assert.assertArrayEquals(TokenBindingExtension.parseKeyParamsList("2"), new byte[] {2});
+        Assert.assertArrayEquals(TokenBindingExtension.parseKeyParamsList("2,0"), new byte[] {2,0});
+        Assert.assertArrayEquals(TokenBindingExtension.parseKeyParamsList("2, 0"), new byte[] {2,0});
+    }
 }

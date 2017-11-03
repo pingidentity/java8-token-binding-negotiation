@@ -1009,6 +1009,11 @@ final class ServerHandshaker extends Handshaker {
         output.flush();
     }
 
+    @Override
+    byte[] getDefaultSupportedTokenBindingKeyParams() {
+        return TokenBindingExtension.getDefaultServerSupportedKeyParams();
+    }
+
     /*
      * Choose cipher suite from among those supported by client. Sets
      * the cipherSuite and keyExchange variables.

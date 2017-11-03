@@ -20,7 +20,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.util.Base64;
 
 /**
  * Some sanity tests of TLS handshaking using both SSLSocket and SSLSession with and without Token Binding being negotiated
@@ -254,6 +253,190 @@ public class ClientServerTest {
         runSocketClient(PORT, new byte[] {TokenBindingExtension.RSA2048_PKCS1_5, TokenBindingExtension.ECDSAP256}, null);
     }
 
+    @Test
+    public void socketToSocketNegoTbEcWithServerDefault() throws Exception {
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_SERVER_DEFAULT_SUPPORTED, "2,0");
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+            
+            Thread thread = new Thread(new SimpleSocketEchoServerRunnable(PORT, null));
+            thread.start();
+            waitForServerStartup();
+            runSocketClient(PORT, new byte[] {TokenBindingExtension.ECDSAP256}, TokenBindingExtension.ECDSAP256);
+
+        } finally {
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
+    @Test
+    public void socketToSocketNegoTbEcWithServerAndClientDefault() throws Exception {
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_SERVER_DEFAULT_SUPPORTED, "2,0");
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED, "2");
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+
+            Thread thread = new Thread(new SimpleSocketEchoServerRunnable(PORT, null));
+            thread.start();
+            waitForServerStartup();
+            runSocketClient(PORT, null, TokenBindingExtension.ECDSAP256);
+
+        } finally {
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
+    @Test
+    public void socketToSocketNegoTbEcWithClientDefault() throws Exception {
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED, "2");
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+
+            Thread thread = new Thread(new SimpleSocketEchoServerRunnable(PORT, new byte[] {TokenBindingExtension.RSA2048_PSS,TokenBindingExtension.ECDSAP256}));
+            thread.start();
+            waitForServerStartup();
+            runSocketClient(PORT, null, TokenBindingExtension.ECDSAP256);
+
+        } finally {
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
+    @Test
+    public void socketToEngineTbEcWithServerDefault() throws Exception {
+
+        SimpleishEngineEchoServerRunnable server = new SimpleishEngineEchoServerRunnable(PORT, null);
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_SERVER_DEFAULT_SUPPORTED, "2,0");
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+
+            Thread thread = new Thread(server);
+            thread.start();
+            waitForServerStartup();
+
+            runSocketClient(PORT, new byte[] {TokenBindingExtension.ECDSAP256}, TokenBindingExtension.ECDSAP256);
+
+        } finally {
+            server.stop();
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
+    @Test
+    public void socketToEngineTbRsaWithClientDefault() throws Exception {
+
+        SimpleishEngineEchoServerRunnable server = new SimpleishEngineEchoServerRunnable(PORT, new byte[] {TokenBindingExtension.ECDSAP256, TokenBindingExtension.RSA2048_PKCS1_5});
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED, "0,1");
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+
+            Thread thread = new Thread(server);
+            thread.start();
+            waitForServerStartup();
+
+            runSocketClient(PORT, null, TokenBindingExtension.RSA2048_PKCS1_5);
+
+        } finally {
+            server.stop();
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
+    @Test
+    public void socketToEngineTbOverrideDefaults() throws Exception {
+
+        SimpleishEngineEchoServerRunnable server = new SimpleishEngineEchoServerRunnable(PORT, new byte[] {TokenBindingExtension.RSA2048_PKCS1_5});
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED, "2");
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED, "2");
+
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+
+            Thread thread = new Thread(server);
+            thread.start();
+            waitForServerStartup();
+
+            runSocketClient(PORT, new byte[] {TokenBindingExtension.RSA2048_PKCS1_5}, TokenBindingExtension.RSA2048_PKCS1_5);
+
+        } finally {
+            server.stop();
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
+
+    @Test
+    public void engineToEngineTbEcWithServerDefault() throws Exception {
+
+        SimpleishEngineEchoServerRunnable server = new SimpleishEngineEchoServerRunnable(PORT, null );
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_SERVER_DEFAULT_SUPPORTED, "2,1");
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+
+            Thread thread = new Thread(server);
+            thread.start();
+            waitForServerStartup();
+
+            runEngineClient(PORT,  new byte[] {TokenBindingExtension.ECDSAP256}, TokenBindingExtension.ECDSAP256);
+
+        } finally {
+            server.stop();
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
+    @Test
+    public void engineToEngineTbEcWithServerAndClientDefault() throws Exception {
+
+        SimpleishEngineEchoServerRunnable server = new SimpleishEngineEchoServerRunnable(PORT, null );
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_SERVER_DEFAULT_SUPPORTED, "2,1");
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED, "2,1");
+
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+
+            Thread thread = new Thread(server);
+            thread.start();
+            waitForServerStartup();
+
+            runEngineClient(PORT,  null, TokenBindingExtension.ECDSAP256);
+
+        } finally {
+            server.stop();
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
+    @Test
+    public void engineToEngineTbEcWithClientDefault() throws Exception {
+
+        SimpleishEngineEchoServerRunnable server = new SimpleishEngineEchoServerRunnable(PORT, new byte[] {2,0} );
+
+        try {
+            System.setProperty(TokenBindingExtension.PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED, "2,1");
+
+            TokenBindingExtension.setUpDefaultSupportedKeyParams();
+
+            Thread thread = new Thread(server);
+            thread.start();
+            waitForServerStartup();
+
+            runEngineClient(PORT,  null, TokenBindingExtension.ECDSAP256);
+
+        } finally {
+            server.stop();
+            resetDefaultSupportedKeyParams();
+        }
+    }
+
     void runEngineClient(int port, byte[] supportedTokenBindingKeyParams, Byte expectedNegotiatedKeyParams) throws Exception {
 
         NioSslClient client = new NioSslClient("TLSv1.2", "localhost", port, supportedTokenBindingKeyParams);
@@ -401,4 +584,12 @@ public class ClientServerTest {
     private void waitForServerStartup() throws InterruptedException {
         Thread.sleep(1000);   // Give the server a little time to start.
     }
+
+    private void resetDefaultSupportedKeyParams()
+    {
+        System.clearProperty(TokenBindingExtension.PROPERTY_NAME_SERVER_DEFAULT_SUPPORTED);
+        System.clearProperty(TokenBindingExtension.PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED);
+        TokenBindingExtension.setUpDefaultSupportedKeyParams();
+    }
+
 }

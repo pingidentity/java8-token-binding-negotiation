@@ -1466,6 +1466,11 @@ final class ClientHandshaker extends Handshaker {
         return clientHelloMessage;
     }
 
+    @Override
+    byte[] getDefaultSupportedTokenBindingKeyParams() {
+        return TokenBindingExtension.getDefaultClientSupportedKeyParams();
+    }
+
     /*
      * Fault detected during handshake.
      */

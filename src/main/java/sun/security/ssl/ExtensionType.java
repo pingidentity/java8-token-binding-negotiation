@@ -101,7 +101,7 @@ final class ExtensionType {
             e(0xff01, "renegotiation_info");     // IANA registry value: 65281
 
     final static ExtensionType EXT_EXTENDED_MASTER_SECRET =
-            e(ExtendedMasterSecretExtension.ID, "extended_master_secret"); // IANA early allocation registry value: 24
+            e(ExtendedMasterSecretExtension.ID, "extended_master_secret"); // IANA registry value: 23
 
     final static ExtensionType EXT_TOKEN_BINDING =
             e(TokenBindingExtension.ID, "token_binding"); // IANA early allocation registry value: 24

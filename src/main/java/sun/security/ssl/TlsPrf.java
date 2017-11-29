@@ -30,7 +30,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
- * some bits of TlsPrfGenerator
+ * some bits of com.sun.crypto.provider.TlsPrfGenerator
  */
 public class TlsPrf {
 

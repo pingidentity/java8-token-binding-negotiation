@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+// -- token binding etc. changes begin --
 package sun.security.ssl;
 
 import java.security.*;
@@ -147,3 +148,4 @@ public final class ExtendedMasterSecretGenerator {
     }
 
 }
+// -- token binding etc. changes end --

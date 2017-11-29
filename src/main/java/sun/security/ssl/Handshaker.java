@@ -206,7 +206,9 @@ abstract class Handshaker {
     // need to dispose the object when it is invalidated
     boolean invalidated;
 
+    // -- token binding etc. changes begin --
     boolean isExtendedMasterSecretExtension;
+    // -- token binding etc. changes end --
 
     Handshaker(SSLSocketImpl c, SSLContextImpl context,
             ProtocolList enabledProtocols, boolean needCertVerify,
@@ -1201,6 +1203,7 @@ abstract class Handshaker {
         int prfHashLength = prf.getPRFHashLength();
         int prfBlockSize = prf.getPRFBlockSize();
 
+        // -- token binding etc. changes begin --
         if (isExtendedMasterSecretExtension) {
 
             input.digestNow(); // need to have all the handshake messages as input into the session hash
@@ -1246,8 +1249,10 @@ abstract class Handshaker {
 
             }
         }
+        // -- token binding etc. changes end --
     }
 
+    // -- token binding etc. changes begin --
     byte[] getConnectionSupportedTokenBindingKeyParams()
     {
         byte[] supportedTokenBindingKeyParams;
@@ -1285,6 +1290,7 @@ abstract class Handshaker {
             engine.serverRandom = svr_random.random_bytes;
         }
     }
+    // -- token binding etc. changes end --
 
     /*
      * Calculate the keys needed for this connection, once the session's

@@ -1,3 +1,4 @@
+// -- token binding etc. changes begin --
 package sun.security.ssl;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -205,3 +206,4 @@ public class TokenBindingExtension extends HelloExtension
     }
 
 }
+// -- token binding etc. changes end --

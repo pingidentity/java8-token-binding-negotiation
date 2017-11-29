@@ -22,6 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
+// -- token binding etc. changes begin --
 package sun.security.ssl;
 
 import java.security.DigestException;
@@ -252,3 +253,4 @@ public class TlsPrf {
         }
     }
 }
+// -- token binding etc. changes end --

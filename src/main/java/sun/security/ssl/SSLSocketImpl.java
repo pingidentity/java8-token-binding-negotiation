@@ -228,6 +228,7 @@ final public class SSLSocketImpl extends BaseSSLSocketImpl {
     // Is the sniMatchers set to empty with SSLParameters.setSNIMatchers()?
     private boolean             noSniMatcher = false;
 
+    // -- token binding etc. changes begin --
     /*
      * RFC 5705 Keying Material Exporters use client and sever random
      * as inputs into the PRF.
@@ -246,6 +247,7 @@ final public class SSLSocketImpl extends BaseSSLSocketImpl {
      *  supported in descending order of preference.
      */
     byte[]                      supportedTokenBindingKeyParams;
+    // -- token binding etc. changes end --
 
 
     /*
@@ -2748,6 +2750,7 @@ final public class SSLSocketImpl extends BaseSSLSocketImpl {
         return retval.toString();
     }
 
+    // -- token binding etc. changes begin --
     public byte[] exportKeyingMaterial(String label, int length)
             throws DigestException, NoSuchAlgorithmException
     {
@@ -2769,4 +2772,5 @@ final public class SSLSocketImpl extends BaseSSLSocketImpl {
     {
         this.supportedTokenBindingKeyParams = supportedTokenBindingKeyParams;
     }
+    // -- token binding etc. changes end --
 }

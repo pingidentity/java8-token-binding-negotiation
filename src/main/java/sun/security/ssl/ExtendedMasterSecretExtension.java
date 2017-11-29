@@ -1,3 +1,4 @@
+// -- token binding etc. changes begin --
 package sun.security.ssl;
 
 import java.io.IOException;
@@ -39,3 +40,4 @@ public class ExtendedMasterSecretExtension extends HelloExtension
     }
 
 }
+// -- token binding etc. changes end --

@@ -85,10 +85,12 @@ final class HelloExtensions {
                         new SupportedEllipticPointFormatsExtension(s, extlen);
             } else if (extType == ExtensionType.EXT_RENEGOTIATION_INFO) {
                 extension = new RenegotiationInfoExtension(s, extlen);
+            // -- token binding etc. changes begin --
             } else if (type == TokenBindingExtension.ID) {
                 extension = new TokenBindingExtension(s, extType);
             } else if (type == ExtendedMasterSecretExtension.ID) {
                 extension = new ExtendedMasterSecretExtension(extlen, extType);
+            // -- token binding etc. changes end --
             } else {
                 extension = new UnknownExtension(s, extlen, extType);
             }

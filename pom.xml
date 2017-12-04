@@ -63,7 +63,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <argLine>
-                       -Xbootclasspath/p:${basedir}/target/classes
+                       -Xbootclasspath/p:${basedir}/target/classes -Djavax.net.debug=ssl,handshake,session
                     </argLine>
                  </configuration>
             </plugin>

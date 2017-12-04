@@ -26,7 +26,7 @@ import java.net.ServerSocket;
  */
 public class ClientServerTest {
 
-    private final int PORT = 45443;
+    private final int PORT = 48443;
 
     private String[] messages = new String[] {
             "I want a hamburger. No, a cheeseburger. I want a hotdog. I want a milkshake.",

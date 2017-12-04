@@ -1,7 +1,8 @@
-package sun.security.ssl;
+package testing.sometests;
 
 import org.junit.Assert;
 import org.junit.Test;
+import sun.security.ssl.TokenBindingExtension;
 
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;

@@ -17,9 +17,9 @@ public class TokenBindingExtension extends HelloExtension
 
     static final byte[] EMPTY = new byte[0];
 
-    static final byte RSA2048_PKCS1_5 = 0;
-    static final byte RSA2048_PSS = 1;
-    static final byte ECDSAP256 = 2;
+    public static final byte RSA2048_PKCS1_5 = 0;
+    public static final byte RSA2048_PSS = 1;
+    public static final byte ECDSAP256 = 2;
 
     static final int ID = 24;
 

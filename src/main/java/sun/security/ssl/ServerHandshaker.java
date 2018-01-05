@@ -540,7 +540,9 @@ final class ServerHandshaker extends Handshaker {
         svr_random = new RandomCookie(sslContext.getSecureRandom());
         m1.svr_random = svr_random;
 
+        // -- token binding etc. changes begin --
         setConnectionRandoms();
+        // -- token binding etc. changes end --
 
         session = null; // forget about the current session
         //
@@ -783,6 +785,7 @@ final class ServerHandshaker extends Handshaker {
             }
         }
 
+        // -- token binding etc. changes begin --
         HelloExtension emsx = mesg.extensions.get(ExtensionType.EXT_EXTENDED_MASTER_SECRET);
         if (emsx != null && protocolVersion.v >= ProtocolVersion.TLS11.v) {
             isExtendedMasterSecretExtension = true;
@@ -798,7 +801,7 @@ final class ServerHandshaker extends Handshaker {
             m1.extensions.add(stbx);
             setConnectionNegotiatedTokenBindingKeyParams(stbx.keyParametersList[0]);
         }
-
+        // -- token binding etc. changes end --
 
         if (debug != null && Debug.isOn("handshake")) {
             m1.print(System.out);
@@ -1008,6 +1011,13 @@ final class ServerHandshaker extends Handshaker {
          */
         output.flush();
     }
+
+    // -- token binding etc. changes begin --
+    @Override
+    byte[] getDefaultSupportedTokenBindingKeyParams() {
+        return TokenBindingExtension.getDefaultServerSupportedKeyParams();
+    }
+    // -- token binding etc. changes end --
 
     /*
      * Choose cipher suite from among those supported by client. Sets

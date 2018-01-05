@@ -203,6 +203,7 @@ final public class SSLEngineImpl extends SSLEngine {
     private volatile SSLSessionImpl     handshakeSession;
 
 
+    // -- token binding etc. changes begin --
     /*
      * RFC 5705 Keying Material Exporters use client and sever random
      * as inputs into the PRF.
@@ -221,6 +222,7 @@ final public class SSLEngineImpl extends SSLEngine {
      *  supported in descending order of preference.
      */
     byte[]                      supportedTokenBindingKeyParams;
+    // -- token binding etc. changes end --
 
     /*
      * Client authentication be off, requested, or required.
@@ -2168,6 +2170,7 @@ final public class SSLEngineImpl extends SSLEngine {
         return receivedCCS;
     }
 
+    // -- token binding etc. changes begin --
     public byte[] exportKeyingMaterial(String label, int length)
             throws DigestException, NoSuchAlgorithmException {
         return KeyingMaterialExporter.ekm(label, length, protocolVersion,
@@ -2188,6 +2191,7 @@ final public class SSLEngineImpl extends SSLEngine {
     {
         this.supportedTokenBindingKeyParams = supportedTokenBindingKeyParams;
     }
+    // -- token binding etc. changes end --
 
     /**
      * Returns a printable representation of this end of the connection.

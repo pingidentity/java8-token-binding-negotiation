@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017, Ping Identity Corp. All rights reserved.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.  Ping Identity designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * in the LICENSE file that accompanied this code.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ */
+// -- token binding etc. changes begin --
 package sun.security.ssl;
 
 import javax.net.ssl.SSLHandshakeException;
@@ -9,11 +26,16 @@ import java.util.Arrays;
  */
 public class TokenBindingExtension extends HelloExtension
 {
+    public static final String PROPERTY_NAME_SERVER_DEFAULT_SUPPORTED = "unbearable.server.defaultSupportedKeyParams";
+    public static final String PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED = "unbearable.client.defaultSupportedKeyParams";
+    private static byte[] defaultServerSupportedKeyParams;
+    private static byte[] defaultClientSupportedKeyParams;
+
     static final byte[] EMPTY = new byte[0];
 
-    static final byte RSA2048_PKCS1_5 = 0;
-    static final byte RSA2048_PSS = 1;
-    static final byte ECDSAP256 = 2;
+    public static final byte RSA2048_PKCS1_5 = 0;
+    public static final byte RSA2048_PSS = 1;
+    public static final byte ECDSAP256 = 2;
 
     static final int ID = 24;
 
@@ -21,6 +43,10 @@ public class TokenBindingExtension extends HelloExtension
     int minor;
 
     byte[] keyParametersList;
+
+    static {
+        setUpDefaultSupportedKeyParams();
+    }
 
     TokenBindingExtension(HandshakeInStream handshakeInStream, ExtensionType extensionType) throws IOException {
         super(extensionType);
@@ -148,9 +174,52 @@ public class TokenBindingExtension extends HelloExtension
         s.putBytes8(keyParametersList);
     }
 
+    public static byte[] parseKeyParamsList(String delimitedKeyParams) {
+        if (delimitedKeyParams == null) {
+            return null;
+        }
+
+        String[] values = delimitedKeyParams.split(",");
+        byte[] keyParams = new byte[values.length];
+        for (int i = 0 ; i < values.length; i++) {
+            int intValue = Integer.parseInt(values[i].trim());
+            if (intValue < 0 || intValue > 255)
+            {
+                throw new NumberFormatException("The value \"" +intValue+ "\" is out of the range (0 - 255) for a single byte.");
+            }
+            byte byteValue = (byte) intValue;
+            keyParams[i] = byteValue;
+        }
+        return keyParams;
+    }
+
+    public static byte[] keyParamsListFromSysProperty(String propertyName) {
+        String propertyValue = System.getProperty(propertyName);
+        try {
+            return parseKeyParamsList(propertyValue);
+        } catch (Exception e) {
+            System.err.println("The value \""+ propertyValue+ "\" of the " + propertyName + " system property is invalid. " + e);
+            return null;
+        }
+    }
+
+    public static void setUpDefaultSupportedKeyParams() {
+        defaultServerSupportedKeyParams = keyParamsListFromSysProperty(PROPERTY_NAME_SERVER_DEFAULT_SUPPORTED);
+        defaultClientSupportedKeyParams = keyParamsListFromSysProperty(PROPERTY_NAME_CLEINT_DEFAULT_SUPPORTED);
+    }
+
+    public static byte[] getDefaultServerSupportedKeyParams() {
+        return defaultServerSupportedKeyParams;
+    }
+
+    public static byte[] getDefaultClientSupportedKeyParams() {
+        return defaultClientSupportedKeyParams;
+    }
+
     @Override
     public String toString() {
         return String.format("Extension %s v%s.%s with key_parameters_list: %s", type, major, minor, Arrays.toString(keyParametersList));
     }
 
 }
+// -- token binding etc. changes end --

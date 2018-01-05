@@ -530,12 +530,14 @@ final class ClientHandshaker extends Handshaker {
         //
         svr_random = mesg.svr_random;
 
+        // -- token binding etc. changes begin --
         setConnectionRandoms();
 
         HelloExtension emsx = mesg.extensions.get(ExtensionType.EXT_EXTENDED_MASTER_SECRET);
         if (emsx != null) {
             isExtendedMasterSecretExtension = true;
         }
+        // -- token binding etc. changes end --
 
         if (isNegotiable(mesg.cipherSuite) == false) {
             fatalSE(Alerts.alert_illegal_parameter,
@@ -555,7 +557,7 @@ final class ClientHandshaker extends Handshaker {
         }
 
 
-
+        // -- token binding etc. changes begin --
         TokenBindingExtension tbx = (TokenBindingExtension) mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
         if (tbx != null) {
             byte[] requestedKeyParamsList = getConnectionSupportedTokenBindingKeyParams();
@@ -568,8 +570,8 @@ final class ClientHandshaker extends Handshaker {
             catch (SSLHandshakeException e) {
                 fatalSE(Alerts.alert_unsupported_extension, e.getMessage(), e);
             }
-
         }
+        // -- token binding etc. changes end --
 
         // so far so good, let's look at the session
         if (session != null) {
@@ -677,8 +679,10 @@ final class ClientHandshaker extends Handshaker {
                     && (type != ExtensionType.EXT_EC_POINT_FORMATS)
                     && (type != ExtensionType.EXT_SERVER_NAME)
                     && (type != ExtensionType.EXT_RENEGOTIATION_INFO)
+                    // -- token binding etc. changes begin --
                     && (type != ExtensionType.EXT_TOKEN_BINDING)
                     && (type != ExtensionType.EXT_EXTENDED_MASTER_SECRET)) {
+                    // -- token binding etc. changes end --
                 fatalSE(Alerts.alert_unsupported_extension,
                     "Server sent an unsupported extension: " + type);
             }
@@ -1456,15 +1460,24 @@ final class ClientHandshaker extends Handshaker {
             clientHelloMessage.addRenegotiationInfoExtension(clientVerifyData);
         }
 
+        // -- token binding etc. changes begin --
         byte[] supportedTokenBindingKeyParams = getConnectionSupportedTokenBindingKeyParams();
 
         if (supportedTokenBindingKeyParams != null && supportedTokenBindingKeyParams.length > 0) {
             clientHelloMessage.extensions.add(new ExtendedMasterSecretExtension());
             clientHelloMessage.extensions.add(new TokenBindingExtension(0, 15, supportedTokenBindingKeyParams));    // TODO don't commit me and whatever just for testing right now with the old PA 
         }
+        // -- token binding etc. changes end --
 
         return clientHelloMessage;
     }
+
+    // -- token binding etc. changes begin --
+    @Override
+    byte[] getDefaultSupportedTokenBindingKeyParams() {
+        return TokenBindingExtension.getDefaultClientSupportedKeyParams();
+    }
+    // -- token binding etc. changes end --
 
     /*
      * Fault detected during handshake.

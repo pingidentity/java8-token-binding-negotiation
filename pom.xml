@@ -99,4 +99,11 @@
     <url>https://github.com/pingidentity/java8-token-binding-negotiation</url>
   </scm>
 
+  <distributionManagement>
+    <repository>
+      <id>maven-repository-on-filesystem</id>
+      <url>file:///${basedir}/target/pseudo-deploy</url>
+    </repository>
+  </distributionManagement>
+
 </project>

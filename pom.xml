@@ -94,7 +94,7 @@
 
   <scm>
     <connection>scm:git:https://github.com/pingidentity/java8-token-binding-negotiation.git</connection>
-    <developerConnection>scm:git:git://github.com:pingidentity/java8-token-binding-negotiation.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:pingidentity/java8-token-binding-negotiation.git</developerConnection>
     <tag>HEAD</tag>
     <url>https://github.com/pingidentity/java8-token-binding-negotiation</url>
   </scm>

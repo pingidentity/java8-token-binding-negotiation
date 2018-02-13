@@ -6,7 +6,7 @@
     <packaging>jar</packaging>
     <artifactId>java8-token-binding-negotiation</artifactId>
     <name>Token Binding Negotiation for Java 8</name>
-    <version>1.0.0.v2-SNAPSHOT</version>
+    <version>1.0.0.v1-SNAPSHOT</version>
 
 
     <build>

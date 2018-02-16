@@ -6,6 +6,7 @@ The Token Binding negotiation implementation relies on modifications to a few Op
 
 | Java Version  | java8-token-binding-negotiation Version
 | ------------- |-------------
+| 1.8.0_162 | [1.0.0.v3]
 | 1.8.0_161 | [1.0.0.v2]
 | 1.8.0_152 | [1.0.0.v1]
 | 1.8.0_151 | [1.0.0.v1]
@@ -13,5 +14,6 @@ The Token Binding negotiation implementation relies on modifications to a few Op
 | 1.8.0_141 | [1.0.0.v1]
 | 1.8.0_131 & prior | unsupported
 
+[1.0.0.v3]:https://github.com/pingidentity/java8-token-binding-negotiation/releases/tag/java8-token-binding-negotiation-1.0.0.v3
 [1.0.0.v2]:https://github.com/pingidentity/java8-token-binding-negotiation/releases/tag/java8-token-binding-negotiation-1.0.0.v2
 [1.0.0.v1]:https://github.com/pingidentity/java8-token-binding-negotiation/releases/tag/java8-token-binding-negotiation-1.0.0.v1

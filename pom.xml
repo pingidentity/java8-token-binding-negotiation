@@ -6,7 +6,7 @@
     <packaging>jar</packaging>
     <artifactId>java8-token-binding-negotiation</artifactId>
     <name>Token Binding Negotiation for Java 8</name>
-    <version>1.0.0.v2</version>
+    <version>1.0.0.v3-SNAPSHOT</version>
 
 
     <build>
@@ -95,7 +95,7 @@
   <scm>
     <connection>scm:git:https://github.com/pingidentity/java8-token-binding-negotiation.git</connection>
     <developerConnection>scm:git:git@github.com:pingidentity/java8-token-binding-negotiation.git</developerConnection>
-    <tag>java8-token-binding-negotiation-1.0.0.v2</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/pingidentity/java8-token-binding-negotiation</url>
   </scm>
 

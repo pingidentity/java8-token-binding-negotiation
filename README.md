@@ -13,6 +13,6 @@ The Token Binding negotiation implementation relies on modifications to a few Op
 | 1.8.0_141 | [1.0.0.v1]
 | 1.8.0_131 & prior | unsupported
 
-[1.0.0.v2]:https://github.com/pingidentity/java8-token-binding-negotiation/releases/tag/java8-token-binding-negotiation-1.0.0.v2
+[1.0.0.v2]:https://github.com/pingidentity/java8-token-binding-negotiation/releases/tag/1.0.0.v2
 
 [1.0.0.v1]:https://github.com/pingidentity/java8-token-binding-negotiation/releases/tag/java8-token-binding-negotiation-1.0.0.v1

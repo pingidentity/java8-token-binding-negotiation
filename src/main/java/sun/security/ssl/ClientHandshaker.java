@@ -532,11 +532,6 @@ final class ClientHandshaker extends Handshaker {
 
         // -- token binding etc. changes begin --
         setConnectionRandoms();
-
-        HelloExtension emsx = mesg.extensions.get(ExtensionType.EXT_EXTENDED_MASTER_SECRET);
-        if (emsx != null) {
-            isExtendedMasterSecretExtension = true;
-        }
         // -- token binding etc. changes end --
 
         if (isNegotiable(mesg.cipherSuite) == false) {
@@ -555,23 +550,6 @@ final class ClientHandshaker extends Handshaker {
                 + mesg.compression_method);
             // NOTREACHED
         }
-
-
-        // -- token binding etc. changes begin --
-        TokenBindingExtension tbx = (TokenBindingExtension) mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
-        if (tbx != null) {
-            byte[] requestedKeyParamsList = getConnectionSupportedTokenBindingKeyParams();
-
-            try {
-                byte serverChosenKeyParams = tbx.processServerHello(isExtendedMasterSecretExtension,
-                        secureRenegotiation, requestedKeyParamsList);
-                setConnectionNegotiatedTokenBindingKeyParams(serverChosenKeyParams);
-            }
-            catch (SSLHandshakeException e) {
-                fatalSE(Alerts.alert_unsupported_extension, e.getMessage(), e);
-            }
-        }
-        // -- token binding etc. changes end --
 
         // so far so good, let's look at the session
         if (session != null) {
@@ -659,6 +637,70 @@ final class ClientHandshaker extends Handshaker {
             }
         }
 
+        // check the "extended_master_secret" extension
+        ExtendedMasterSecretExtension extendedMasterSecretExt =
+                (ExtendedMasterSecretExtension)mesg.extensions.get(
+                        ExtensionType.EXT_EXTENDED_MASTER_SECRET);
+        if (extendedMasterSecretExt != null) {
+            // Is it the expected server extension?
+            if (!useExtendedMasterSecret ||
+                    !(mesgVersion.v >= ProtocolVersion.TLS10.v) || !requestedToUseEMS) {
+                fatalSE(Alerts.alert_unsupported_extension,
+                        "Server sent the extended_master_secret " +
+                        "extension improperly");
+            }
+
+            // For abbreviated handshake, if the original session did not use
+            // the "extended_master_secret" extension but the new ServerHello
+            // contains the extension, the client MUST abort the handshake.
+            if (resumingSession && (session != null) &&
+                    !session.getUseExtendedMasterSecret()) {
+                fatalSE(Alerts.alert_unsupported_extension,
+                        "Server sent an unexpected extended_master_secret " +
+                        "extension on session resumption");
+            }
+        } else {
+            if (useExtendedMasterSecret && !allowLegacyMasterSecret) {
+                // For full handshake, if a client receives a ServerHello
+                // without the extension, it SHOULD abort the handshake if
+                // it does not wish to interoperate with legacy servers.
+                fatalSE(Alerts.alert_handshake_failure,
+                    "Extended Master Secret extension is required");
+            }
+
+            if (resumingSession && (session != null)) {
+                if (session.getUseExtendedMasterSecret()) {
+                    // For abbreviated handshake, if the original session used
+                    // the "extended_master_secret" extension but the new
+                    // ServerHello does not contain the extension, the client
+                    // MUST abort the handshake.
+                    fatalSE(Alerts.alert_handshake_failure,
+                            "Missing Extended Master Secret extension " +
+                            "on session resumption");
+                } else if (useExtendedMasterSecret && !allowLegacyResumption) {
+                    // Unlikely, abbreviated handshake should be discarded.
+                    fatalSE(Alerts.alert_handshake_failure,
+                        "Extended Master Secret extension is required");
+                }
+            }
+        }
+
+        // -- token binding etc. changes begin --
+        TokenBindingExtension tbx = (TokenBindingExtension) mesg.extensions.get(ExtensionType.EXT_TOKEN_BINDING);
+        if (tbx != null) {
+            byte[] requestedKeyParamsList = getConnectionSupportedTokenBindingKeyParams();
+
+            try {
+                byte serverChosenKeyParams = tbx.processServerHello(extendedMasterSecretExt != null,
+                        secureRenegotiation, requestedKeyParamsList);
+                setConnectionNegotiatedTokenBindingKeyParams(serverChosenKeyParams);
+            }
+            catch (SSLHandshakeException e) {
+                fatalSE(Alerts.alert_unsupported_extension, e.getMessage(), e);
+            }
+        }
+        // -- token binding etc. changes end --
+
         if (resumingSession && session != null) {
             setHandshakeSessionSE(session);
             // Reserve the handshake state if this is a session-resumption
@@ -681,8 +723,8 @@ final class ClientHandshaker extends Handshaker {
                     && (type != ExtensionType.EXT_RENEGOTIATION_INFO)
                     // -- token binding etc. changes begin --
                     && (type != ExtensionType.EXT_TOKEN_BINDING)
-                    && (type != ExtensionType.EXT_EXTENDED_MASTER_SECRET)) {
                     // -- token binding etc. changes end --
+                    && (type != ExtensionType.EXT_EXTENDED_MASTER_SECRET)){
                 fatalSE(Alerts.alert_unsupported_extension,
                     "Server sent an unsupported extension: " + type);
             }
@@ -691,7 +733,8 @@ final class ClientHandshaker extends Handshaker {
         // Create a new session, we need to do the full handshake
         session = new SSLSessionImpl(protocolVersion, cipherSuite,
                             getLocalSupportedSignAlgs(),
-                            mesg.sessionId, getHostSE(), getPortSE());
+                            mesg.sessionId, getHostSE(), getPortSE(),
+                            (extendedMasterSecretExt != null));
         session.setRequestedServerNames(requestedServerNames);
         setHandshakeSessionSE(session);
         if (debug != null && Debug.isOn("handshake")) {
@@ -1327,6 +1370,44 @@ final class ClientHandshaker extends Handshaker {
                 session = null;
             }
 
+            if ((session != null) && useExtendedMasterSecret) {
+                boolean isTLS10Plus = sessionVersion.v >= ProtocolVersion.TLS10.v;
+                if (isTLS10Plus && !session.getUseExtendedMasterSecret()) {
+                    if (!allowLegacyResumption) {
+                        // perform full handshake instead
+                        //
+                        // The client SHOULD NOT offer an abbreviated handshake
+                        // to resume a session that does not use an extended
+                        // master secret.  Instead, it SHOULD offer a full
+                        // handshake.
+                        session = null;
+                    }
+                }
+
+                if ((session != null) && !allowUnsafeServerCertChange) {
+                    // It is fine to move on with abbreviate handshake if
+                    // endpoint identification is enabled.
+                    String identityAlg = getEndpointIdentificationAlgorithmSE();
+                    if ((identityAlg == null || identityAlg.length() == 0)) {
+                        if (isTLS10Plus) {
+                            if (!session.getUseExtendedMasterSecret()) {
+                                // perform full handshake instead
+                                session = null;
+                            }   // Otherwise, use extended master secret.
+                        } else {
+                            // The extended master secret extension does not
+                            // apply to SSL 3.0.  Perform a full handshake
+                            // instead.
+                            //
+                            // Note that the useExtendedMasterSecret is
+                            // extended to protect SSL 3.0 connections,
+                            // by discarding abbreviate handshake.
+                            session = null;
+                        }
+                    }
+                }
+            }
+
             if (session != null) {
                 if (debug != null) {
                     if (Debug.isOn("handshake") || Debug.isOn("session")) {
@@ -1411,12 +1492,12 @@ final class ClientHandshaker extends Handshaker {
 
         // add elliptic curves and point format extensions
         if (cipherSuites.containsEC()) {
-            SupportedEllipticCurvesExtension ece =
-                SupportedEllipticCurvesExtension.createExtension(algorithmConstraints);
+            EllipticCurvesExtension ece =
+                EllipticCurvesExtension.createExtension(algorithmConstraints);
             if (ece != null) {
                 clientHelloMessage.extensions.add(ece);
                 clientHelloMessage.extensions.add(
-                   SupportedEllipticPointFormatsExtension.DEFAULT);
+                   EllipticPointFormatsExtension.DEFAULT);
             }
         }
 
@@ -1431,6 +1512,14 @@ final class ClientHandshaker extends Handshaker {
             }
 
             clientHelloMessage.addSignatureAlgorithmsExtension(localSignAlgs);
+        }
+
+        // add Extended Master Secret extension
+        if (useExtendedMasterSecret && (maxProtocolVersion.v >= ProtocolVersion.TLS10.v)) {
+            if ((session == null) || session.getUseExtendedMasterSecret()) {
+                clientHelloMessage.addExtendedMasterSecretExtension();
+                requestedToUseEMS = true;
+            }
         }
 
         // add server_name extension
@@ -1463,8 +1552,7 @@ final class ClientHandshaker extends Handshaker {
         // -- token binding etc. changes begin --
         byte[] supportedTokenBindingKeyParams = getConnectionSupportedTokenBindingKeyParams();
 
-        if (supportedTokenBindingKeyParams != null && supportedTokenBindingKeyParams.length > 0) {
-            clientHelloMessage.extensions.add(new ExtendedMasterSecretExtension());
+        if (supportedTokenBindingKeyParams != null && supportedTokenBindingKeyParams.length > 0 && requestedToUseEMS) {
             clientHelloMessage.extensions.add(new TokenBindingExtension(1, 0, supportedTokenBindingKeyParams));
         }
         // -- token binding etc. changes end --
@@ -1478,6 +1566,7 @@ final class ClientHandshaker extends Handshaker {
         return TokenBindingExtension.getDefaultClientSupportedKeyParams();
     }
     // -- token binding etc. changes end --
+
 
     /*
      * Fault detected during handshake.
@@ -1509,10 +1598,14 @@ final class ClientHandshaker extends Handshaker {
         // Allow server certificate change in client side during renegotiation
         // after a session-resumption abbreviated initial handshake?
         //
-        // DO NOT need to check allowUnsafeServerCertChange here. We only
+        // DO NOT need to check allowUnsafeServerCertChange here.  We only
         // reserve server certificates when allowUnsafeServerCertChange is
         // flase.
-        if (reservedServerCerts != null) {
+        //
+        // Allow server certificate change if it is negotiated to use the
+        // extended master secret.
+        if ((reservedServerCerts != null) &&
+                !session.getUseExtendedMasterSecret()) {
             // It is not necessary to check the certificate update if endpoint
             // identification is enabled.
             String identityAlg = getEndpointIdentificationAlgorithmSE();

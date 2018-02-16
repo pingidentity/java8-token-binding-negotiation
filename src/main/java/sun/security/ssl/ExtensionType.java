@@ -43,7 +43,7 @@ final class ExtensionType {
         return name;
     }
 
-    static List<ExtensionType> knownExtensions = new ArrayList<ExtensionType>(9);
+    static List<ExtensionType> knownExtensions = new ArrayList<ExtensionType>(14);
 
     static ExtensionType get(int id) {
         for (ExtensionType ext : knownExtensions) {
@@ -96,14 +96,15 @@ final class ExtensionType {
     final static ExtensionType EXT_SIGNATURE_ALGORITHMS =
             e(0x000D, "signature_algorithms");   // IANA registry value: 13
 
+    // extensions defined in RFC 7627
+    static final ExtensionType EXT_EXTENDED_MASTER_SECRET =
+            e(0x0017, "extended_master_secret"); // IANA registry value: 23
+
     // extensions defined in RFC 5746
     final static ExtensionType EXT_RENEGOTIATION_INFO =
             e(0xff01, "renegotiation_info");     // IANA registry value: 65281
 
     // -- token binding etc. changes begin --
-    final static ExtensionType EXT_EXTENDED_MASTER_SECRET =
-            e(ExtendedMasterSecretExtension.ID, "extended_master_secret"); // IANA registry value: 23
-
     final static ExtensionType EXT_TOKEN_BINDING =
             e(TokenBindingExtension.ID, "token_binding"); // IANA early allocation registry value: 24
     // -- token binding etc. changes end --

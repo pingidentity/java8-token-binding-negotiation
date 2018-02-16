@@ -29,12 +29,6 @@ package sun.security.ssl;
 import java.io.*;
 import java.util.*;
 import java.security.*;
-import java.security.NoSuchAlgorithmException;
-import java.security.AccessController;
-import java.security.AlgorithmConstraints;
-import java.security.AccessControlContext;
-import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedActionException;
 
 import javax.crypto.*;
 import javax.crypto.spec.*;
@@ -43,6 +37,7 @@ import javax.net.ssl.*;
 import sun.misc.HexDumpEncoder;
 
 import sun.security.internal.spec.*;
+import sun.security.internal.interfaces.TlsMasterSecret;
 
 import sun.security.ssl.HandshakeMessage.*;
 import sun.security.ssl.CipherSuite.*;
@@ -203,12 +198,40 @@ abstract class Handshaker {
             Debug.getBooleanProperty(
                 "jdk.tls.rejectClientInitiatedRenegotiation", false);
 
+    // To switch off the extended_master_secret extension.
+    static final boolean useExtendedMasterSecret;
+
+    // Allow session resumption without Extended Master Secret extension.
+    static final boolean allowLegacyResumption =
+            Debug.getBooleanProperty("jdk.tls.allowLegacyResumption", true);
+
+    // Allow full handshake without Extended Master Secret extension.
+    static final boolean allowLegacyMasterSecret =
+            Debug.getBooleanProperty("jdk.tls.allowLegacyMasterSecret", true);
+
+    // Is it requested to use extended master secret extension?
+    boolean requestedToUseEMS = false;
+
     // need to dispose the object when it is invalidated
     boolean invalidated;
 
-    // -- token binding etc. changes begin --
-    boolean isExtendedMasterSecretExtension;
-    // -- token binding etc. changes end --
+    // Is the extended_master_secret extension supported?
+    static {
+        boolean supportExtendedMasterSecret = true;
+        try {
+            KeyGenerator kg =
+                JsseJce.getKeyGenerator("SunTlsExtendedMasterSecret");
+        } catch (NoSuchAlgorithmException nae) {
+            supportExtendedMasterSecret = false;
+        }
+
+        if (supportExtendedMasterSecret) {
+            useExtendedMasterSecret = Debug.getBooleanProperty(
+                    "jdk.tls.useExtendedMasterSecret", true);
+        } else {
+            useExtendedMasterSecret = false;
+        }
+    }
 
     Handshaker(SSLSocketImpl c, SSLContextImpl context,
             ProtocolList enabledProtocols, boolean needCertVerify,
@@ -219,7 +242,7 @@ abstract class Handshaker {
         init(context, enabledProtocols, needCertVerify, isClient,
             activeProtocolVersion, isInitialHandshake, secureRenegotiation,
             clientVerifyData, serverVerifyData);
-    }
+   }
 
     Handshaker(SSLEngineImpl engine, SSLContextImpl context,
             ProtocolList enabledProtocols, boolean needCertVerify,
@@ -650,7 +673,7 @@ abstract class Handshaker {
                             boolean available = true;
                             if (suite.keyExchange.isEC) {
                                 if (!checkedCurves) {
-                                    hasCurves = SupportedEllipticCurvesExtension
+                                    hasCurves = EllipticCurvesExtension
                                         .hasActiveCurves(algorithmConstraints);
                                     checkedCurves = true;
 
@@ -741,7 +764,7 @@ abstract class Handshaker {
                             boolean available = true;
                             if (suite.keyExchange.isEC) {
                                 if (!checkedCurves) {
-                                    hasCurves = SupportedEllipticCurvesExtension
+                                    hasCurves = EllipticCurvesExtension
                                         .hasActiveCurves(algorithmConstraints);
                                     checkedCurves = true;
 
@@ -1172,6 +1195,7 @@ abstract class Handshaker {
      * SHA1 hashes are of (different) constant strings, the pre-master
      * secret, and the nonces provided by the client and the server.
      */
+    @SuppressWarnings("deprecation")
     private SecretKey calculateMasterSecret(SecretKey preMasterSecret,
             ProtocolVersion requestedVersion) {
 
@@ -1203,53 +1227,52 @@ abstract class Handshaker {
         int prfHashLength = prf.getPRFHashLength();
         int prfBlockSize = prf.getPRFBlockSize();
 
-        // -- token binding etc. changes begin --
-        if (isExtendedMasterSecretExtension) {
+        TlsMasterSecretParameterSpec spec;
+        if (session.getUseExtendedMasterSecret()) {
+            // reset to use the extended master secret algorithm
+            masterAlg = "SunTlsExtendedMasterSecret";
 
-            input.digestNow(); // need to have all the handshake messages as input into the session hash
-            byte[] sessionHash = handshakeHash.getFinishedHash();
+            byte[] sessionHash = null;
+            if (protocolVersion.v >= ProtocolVersion.TLS12.v) {
+                sessionHash = handshakeHash.getFinishedHash();
+            } else {
+                // TLS 1.0/1.1
+                sessionHash = new byte[36];
+                try {
+                    handshakeHash.getMD5Clone().digest(sessionHash, 0, 16);
+                    handshakeHash.getSHAClone().digest(sessionHash, 16, 20);
+                } catch (DigestException de) {
+                    throw new ProviderException(de);
+                }
+            }
 
-            TlsMasterSecretParameterSpec spec = new TlsMasterSecretParameterSpec(
+            spec = new TlsMasterSecretParameterSpec(
                     preMasterSecret, protocolVersion.major, protocolVersion.minor,
-                    sessionHash, new byte[0], // overload the randoms to put the session hash in for the seed
-                    prfHashAlg, prfHashLength, prfBlockSize);
-            ExtendedMasterSecretGenerator extendedMasterGenerator = new ExtendedMasterSecretGenerator();
-            try
-            {
-                extendedMasterGenerator.init(spec);
-                SecretKey secretKey = extendedMasterGenerator.generateKey();
-                return secretKey;
-            }
-            catch (InvalidAlgorithmParameterException e)
-            {
-                throw new ProviderException(e);
-            }
-
+                    sessionHash, prfHashAlg, prfHashLength, prfBlockSize);
         } else {
-            TlsMasterSecretParameterSpec spec = new TlsMasterSecretParameterSpec(
+            spec = new TlsMasterSecretParameterSpec(
                     preMasterSecret, protocolVersion.major, protocolVersion.minor,
                     clnt_random.random_bytes, svr_random.random_bytes,
                     prfHashAlg, prfHashLength, prfBlockSize);
-
-            try {
-                KeyGenerator kg = JsseJce.getKeyGenerator(masterAlg);
-                kg.init(spec);
-                return kg.generateKey();
-            } catch (InvalidAlgorithmParameterException |
-                    NoSuchAlgorithmException iae) {
-                // unlikely to happen, otherwise, must be a provider exception
-                //
-                // For RSA premaster secrets, do not signal a protocol error
-                // due to the Bleichenbacher attack. See comments further down.
-                if (debug != null && Debug.isOn("handshake")) {
-                    System.out.println("RSA master secret generation error:");
-                    iae.printStackTrace(System.out);
-                }
-                throw new ProviderException(iae);
-
-            }
         }
-        // -- token binding etc. changes end --
+
+        try {
+            KeyGenerator kg = JsseJce.getKeyGenerator(masterAlg);
+            kg.init(spec);
+            return kg.generateKey();
+        } catch (InvalidAlgorithmParameterException |
+                NoSuchAlgorithmException iae) {
+            // unlikely to happen, otherwise, must be a provider exception
+            //
+            // For RSA premaster secrets, do not signal a protocol error
+            // due to the Bleichenbacher attack. See comments further down.
+            if (debug != null && Debug.isOn("handshake")) {
+                System.out.println("RSA master secret generation error:");
+                iae.printStackTrace(System.out);
+            }
+            throw new ProviderException(iae);
+
+        }
     }
 
     // -- token binding etc. changes begin --

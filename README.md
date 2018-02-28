@@ -36,7 +36,7 @@ Where path-to-java8-token-binding-negotiation-jar is the path on the file system
 A few new methods have been added to the OpenJDK implementations of `SSLEngine` and `SSLSocket` to facilitate an application doing Token Binding using the functionality provided by this project.   
 
 ##### Supported Key Parameters for Negotiation   
-In order to negotiate the use of Token Binding, before handshaking begins, the list of identifiers of the supported key parameters needs to be indicated to the connection. For a client this is the list that will be offered in the Client Hello Extension. For a server this is the list of key parameter types that it is willing to successfully negotiate. In all cases the list indicates the Token Binding key parameters supported in descending order of preference. This can be accomplished by calling the following method on `SSLEngine` or `SSLSocket` before the handshaking process begins.  
+In order to negotiate the use of Token Binding, before handshaking begins, the list of identifiers of the supported key parameters needs to be indicated for the connection. For a client, this is the list that will be offered in the Client Hello Extension. For a server, this is the list of key parameter types that it is willing to successfully negotiate. In all cases the list indicates the Token Binding key parameters supported in descending order of preference. This can be accomplished by calling the following method on `SSLEngine` or `SSLSocket` before the handshaking process begins.  
 
 ```java 
 public void setSupportedTokenBindingKeyParams(byte[] supportedTokenBindingKeyParams)
@@ -58,7 +58,7 @@ Alternately, the system properties `unbearable.server.defaultSupportedKeyParams`
 ```
 
 ##### After Negotiation 
-If the use of the Token Binding is successfully negotiated with HTTP, the client includes an encoded token binding message in each request via the `Sec-Token-Binding` header and the server validates the message. In order to produce or consume a Token Binding message, an application needs to know what key parameters type was negotiated and get the exported keying material (EKM) from the TLS connection.  That data can be obtained using the following methods on `SSLEngine` or `SSLSocket` where `getNegotiatedTokenBindingKeyParams()` will give the the identifier of the negotiated key parameters (or `null`, if Token Binding was not negotiated) and `exportKeyingMaterial("EXPORTER-Token-Binding", 32)` will return the EKM.
+If the use of the Token Binding is successfully negotiated with HTTP, the client includes an encoded token binding message in each request via the `Sec-Token-Binding` header and the server validates the message. In order to produce or consume a Token Binding message, an application needs to know what key parameters type was negotiated and get the exported keying material (EKM) from the TLS connection.  That data can be obtained using the following methods on `SSLEngine` or `SSLSocket` where `getNegotiatedTokenBindingKeyParams()` will give the the identifier of the negotiated key parameters (or `null`, if Token Binding was not negotiated) and `exportKeyingMaterial("EXPORTER-Token-Binding", 32)` will return the appropriate EKM.
 
 
 ```java 

@@ -21,7 +21,7 @@ than the one to which they were issued.
 This project provides an implementation of the TLS Extension for Token Binding Protocol Negotiation as well as TLS Keying Material Exporters (also TLS Extended Master Secret Extension [[RFC 7627]] in some older versions) for Java 8. An an open source library for consuming or producing Token Binding message structures, which applications do after negotiation, can be found with the [token-binding-java] project.  
 
 ### Usage 
-This implementation relies on modifications of a few JDK classes in the `sun.security.ssl` package. The JVM needs to be told to use those modified classes in place of those in the JRE. And your application needs to interact with the API of some of those classes, likely through reflection and dynamic method invocation. 
+This implementation relies on modifications of a few JDK classes in the `sun.security.ssl` package. The JVM needs to be told to use those modified classes in place of those in JSSE jar of the JRE. And your application needs to interact with the API of some of those classes, likely through reflection and dynamic method invocation. 
 
 #### Starting the JVM 
 To use the functionality of this project, the JVM needs to be started using the `-Xbootclasspath/p` option as follows:

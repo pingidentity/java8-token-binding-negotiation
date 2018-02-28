@@ -32,7 +32,7 @@ java -Xbootclasspath/p:<path-to-java8-token-binding-negotiation-jar> ...
 
 Where path-to-java8-token-binding-negotiation-jar is the path on the file system for this project's jar file. This prepends the jar file to the default bootstrap classpath so that its classes will be used in place of the default JRE classes. Be certain to use the jar version which corresponds to the version of the JRE being used (see [Versions](#versions) below).
 
-##### API
+#### API
 A few new methods have been added to the OpenJDK implementations of `SSLEngine` and `SSLSocket` to facilitate an application doing Token Binding using the functionality provided by this project.   
 
 ##### Supported Key Parameters for Negotiation   

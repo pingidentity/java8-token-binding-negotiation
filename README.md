@@ -93,7 +93,7 @@ The Token Binding negotiation implementation relies on modifications to a few Op
 | 1.8.0_141 | [1.0.0.v1]
 | 1.8.0_131 & prior | unsupported
 
-See [java9-token-binding-negotiation] for Token Binding Protocol Negotiation support for Java 9.
+See [java9-token-binding-negotiation] for Token Binding Protocol Negotiation support with Java 9.
 
 ### License
 The modified OpenJDK classes are released under the same GPLv2 + Classpath Exception license of OpenJDK.

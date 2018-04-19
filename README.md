@@ -85,6 +85,8 @@ The Token Binding negotiation implementation relies on modifications to a few Op
 
 | Java 8 Version  | java8-token-binding-negotiation Version
 | ------------- |-------------
+| 1.8.0_172 | [1.0.0.v3]
+| 1.8.0_171 | [1.0.0.v3]
 | 1.8.0_162 | [1.0.0.v3]
 | 1.8.0_161 | [1.0.0.v2]
 | 1.8.0_152 | [1.0.0.v1]

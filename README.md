@@ -95,7 +95,6 @@ The Token Binding negotiation implementation relies on modifications to a few Op
 | 1.8.0_141 | [1.0.0.v1]
 | 1.8.0_131 & prior | unsupported
 
-See [java9-token-binding-negotiation] for Token Binding Protocol Negotiation support with Java 9.
 See [java9-token-binding-negotiation] or [java10-token-binding-negotiation] for Token Binding Protocol Negotiation support with Java 9 and Java 10 respectively.
 
 
